@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import greet_pb2 as greet__pb2
+import cam_pb2 as cam__pb2
 
 
 class CameraStreamStub(object):
@@ -16,23 +16,23 @@ class CameraStreamStub(object):
         """
         self.SendCameraStream = channel.unary_unary(
                 '/CameraStream.CameraStream/SendCameraStream',
-                request_serializer=greet__pb2.SendCameraStreamRequest.SerializeToString,
-                response_deserializer=greet__pb2.SendCameraStreamResult.FromString,
+                request_serializer=cam__pb2.SendCameraStreamRequest.SerializeToString,
+                response_deserializer=cam__pb2.SendCameraStreamResult.FromString,
                 )
         self.GetActiveCameraIds = channel.unary_unary(
                 '/CameraStream.CameraStream/GetActiveCameraIds',
-                request_serializer=greet__pb2.GetActiveCameraIdsRequest.SerializeToString,
-                response_deserializer=greet__pb2.GetActiveCameraIdsResult.FromString,
+                request_serializer=cam__pb2.GetActiveCameraIdsRequest.SerializeToString,
+                response_deserializer=cam__pb2.GetActiveCameraIdsResult.FromString,
                 )
         self.GetCameraTexture = channel.unary_unary(
                 '/CameraStream.CameraStream/GetCameraTexture',
-                request_serializer=greet__pb2.GetCameraTextureRequest.SerializeToString,
-                response_deserializer=greet__pb2.GetCameraTextureResult.FromString,
+                request_serializer=cam__pb2.GetCameraTextureRequest.SerializeToString,
+                response_deserializer=cam__pb2.GetCameraTextureResult.FromString,
                 )
         self.GetAverageFps = channel.unary_unary(
                 '/CameraStream.CameraStream/GetAverageFps',
-                request_serializer=greet__pb2.GetAverageFpsRequest.SerializeToString,
-                response_deserializer=greet__pb2.GetAverageFpsResult.FromString,
+                request_serializer=cam__pb2.GetAverageFpsRequest.SerializeToString,
+                response_deserializer=cam__pb2.GetAverageFpsResult.FromString,
                 )
 
 
@@ -68,23 +68,23 @@ def add_CameraStreamServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'SendCameraStream': grpc.unary_unary_rpc_method_handler(
                     servicer.SendCameraStream,
-                    request_deserializer=greet__pb2.SendCameraStreamRequest.FromString,
-                    response_serializer=greet__pb2.SendCameraStreamResult.SerializeToString,
+                    request_deserializer=cam__pb2.SendCameraStreamRequest.FromString,
+                    response_serializer=cam__pb2.SendCameraStreamResult.SerializeToString,
             ),
             'GetActiveCameraIds': grpc.unary_unary_rpc_method_handler(
                     servicer.GetActiveCameraIds,
-                    request_deserializer=greet__pb2.GetActiveCameraIdsRequest.FromString,
-                    response_serializer=greet__pb2.GetActiveCameraIdsResult.SerializeToString,
+                    request_deserializer=cam__pb2.GetActiveCameraIdsRequest.FromString,
+                    response_serializer=cam__pb2.GetActiveCameraIdsResult.SerializeToString,
             ),
             'GetCameraTexture': grpc.unary_unary_rpc_method_handler(
                     servicer.GetCameraTexture,
-                    request_deserializer=greet__pb2.GetCameraTextureRequest.FromString,
-                    response_serializer=greet__pb2.GetCameraTextureResult.SerializeToString,
+                    request_deserializer=cam__pb2.GetCameraTextureRequest.FromString,
+                    response_serializer=cam__pb2.GetCameraTextureResult.SerializeToString,
             ),
             'GetAverageFps': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAverageFps,
-                    request_deserializer=greet__pb2.GetAverageFpsRequest.FromString,
-                    response_serializer=greet__pb2.GetAverageFpsResult.SerializeToString,
+                    request_deserializer=cam__pb2.GetAverageFpsRequest.FromString,
+                    response_serializer=cam__pb2.GetAverageFpsResult.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -108,8 +108,8 @@ class CameraStream(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/CameraStream.CameraStream/SendCameraStream',
-            greet__pb2.SendCameraStreamRequest.SerializeToString,
-            greet__pb2.SendCameraStreamResult.FromString,
+            cam__pb2.SendCameraStreamRequest.SerializeToString,
+            cam__pb2.SendCameraStreamResult.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -125,8 +125,8 @@ class CameraStream(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/CameraStream.CameraStream/GetActiveCameraIds',
-            greet__pb2.GetActiveCameraIdsRequest.SerializeToString,
-            greet__pb2.GetActiveCameraIdsResult.FromString,
+            cam__pb2.GetActiveCameraIdsRequest.SerializeToString,
+            cam__pb2.GetActiveCameraIdsResult.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -142,8 +142,8 @@ class CameraStream(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/CameraStream.CameraStream/GetCameraTexture',
-            greet__pb2.GetCameraTextureRequest.SerializeToString,
-            greet__pb2.GetCameraTextureResult.FromString,
+            cam__pb2.GetCameraTextureRequest.SerializeToString,
+            cam__pb2.GetCameraTextureResult.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -159,7 +159,7 @@ class CameraStream(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/CameraStream.CameraStream/GetAverageFps',
-            greet__pb2.GetAverageFpsRequest.SerializeToString,
-            greet__pb2.GetAverageFpsResult.FromString,
+            cam__pb2.GetAverageFpsRequest.SerializeToString,
+            cam__pb2.GetAverageFpsResult.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

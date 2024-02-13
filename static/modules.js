@@ -1,20 +1,22 @@
-
 class BlockParams {
-    constructor(name, struct_list) {
+    constructor(name, socket, struct_list) {
+        this.type = "params";
+
         this.name = name;
 
-        this.struct_names = struct_list;
+        // SOCKET EVENT LISTNER
+        socket.on(`update.params:${this.name}`, msg => this.setValues(msg));
 
+        // HTML
         this.element = document.createElement("div");
         this.element.className = "item";
 
         this.value_elements = []; // list[<span>]
 
-        // Construct
         let div_container = document.createElement("div");
         div_container.innerHTML = `<h2>${this.name}</h2>`;
 
-        for (let struct_name of this.struct_names) {
+        for (let struct_name of struct_list) {
             let p = document.createElement("p");
 
             let valueSpan = document.createElement("span");
@@ -31,8 +33,10 @@ class BlockParams {
         this.element.appendChild(div_container);
     }
 
-    setValues(list_values) {
-        if (list_values.length !== this.value_elements.length) return;
+    setValues(message) {
+        let list_values = JSON.parse(message);
+
+        if (list_values.length != this.value_elements.length) return;
 
         for (let i = 0; i < list_values.length; i++) {
             if (i < this.value_elements.length) this.value_elements[i].innerText = list_values[i];
@@ -42,42 +46,32 @@ class BlockParams {
 
 
 class BlockCamera {
-    constructor(name, struct_list) {
-        this.name = name;
+    constructor(camera_id, socket) {
+        this.type = "camera";
 
-        this.struct_names = struct_list;
+        this.id = camera_id;
 
+        // SOCKET
+        socket.on(`update.camera:${this.id}`, img => this.setValues(img));
+
+        // HTML
         this.element = document.createElement("div");
         this.element.className = "item";
 
-        this.value_elements = []; // list[<span>]
-
         // Construct
         let div_container = document.createElement("div");
-        div_container.innerHTML = `<h2>${this.name}</h2>`;
+        div_container.innerHTML = `<h2>Camera</h2>${this.id}`;
 
-        for (let struct_name of this.struct_names) {
-            let p = document.createElement("p");
-
-            let valueSpan = document.createElement("span");
-            valueSpan.className = "block-value";
-            valueSpan.innerText = "-";
-            this.value_elements.push(valueSpan);
-
-            p.innerHTML = `<span class="block-name">${struct_name}</span>`;
-            p.appendChild(valueSpan);
-            
-            div_container.appendChild(p);
-        }
+        this.image_element = document.createElement("img");
+        this.image_element.width = 360;
+        this.image_element.height = 360;
+        div_container.appendChild(this.image_element);
 
         this.element.appendChild(div_container);
     }
 
-    setValues(list_values) {
-        if (list_values.length !== this.value_elements.length) return;
-
-        for (let i = 0; i < list_values.length; i++) {
-            if (i < this.value_elements.length) this.value_elements[i].innerText = list_values[i];
-        }
+    setValues(image) {
+        var blob = new Blob([image], { type: 'image/png' });
+        this.image_element.src = URL.createObjectURL(blob);
     }
 }

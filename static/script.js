@@ -8,7 +8,7 @@ function DefaultStruct() {
 }
 
 
-function CreateStructs(data) {
+function CreateStructs(data, socket) {
     for (const module in data) {
         blocks[module] = [];
     }
@@ -16,22 +16,21 @@ function CreateStructs(data) {
 
     for (const name in data.params) {
         let fields = data.params[name];
-        blocks.params.push(new BlockParams(name, fields));
+        blocks.params.push(new BlockParams(name, socket, fields));
     }
 
-    for (const name in data.camera) {
-        blocks.camera.push(new BlockCamera(name, "TODO"))
+    for (const cam_id in data.camera) {
+        blocks.camera.push(new BlockCamera(cam_id, socket));
     }
 
 
-    all_blocks = []
+    all_blocks = [];
     for(const e in blocks) {
-        for (const x of blocks[e]) 
-            all_blocks.push(x)
+        for (const x of blocks[e])
+            all_blocks.push(x);
     }
 
-
-    for (let row of GroupListTwoByTwo(all_blocks)) { // GroupListTwoByTwo -> Junta os elementos de uma lista em (grupos de 2) = DUPLAS
+    for (let row of GroupListTwoByTwo(all_blocks)) {
         let element = row[0].element;
     
         if (row.length == 2) {
@@ -51,7 +50,6 @@ function CreateStructs(data) {
 
 function UpdateValues(data) {
     //blocks[data.ke].setValues(data.params)
-
 
     for (const key in data) {
         for (let i = 0; i < data[key].length; i++) {

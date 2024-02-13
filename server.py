@@ -1,15 +1,16 @@
 from flask import Flask, render_template, request
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 
 from KSPConn import KSPConnection
 from CameraConn import CameraConn
 
-from PIL import Image
-from io import BytesIO
+def debug(text:str):
+    print(f"Server> {text}")
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "secret"
 socket_io = SocketIO(app)
+
 
 @app.route("/")
 def index():
@@ -22,44 +23,32 @@ clients = set()
 def handle_connect():
     clients.add(request.sid)
 
-    emit("setup", ksp_conn.setup_message)
+    ksp_conn.emit_setup(socket_io.emit)
 
-    print("Client connected:", request.sid)
+    debug(f"Client connected: {request.sid}")
+
+
+def broadcast():
+    while ksp_conn.connected:
+        ksp_conn.emit_values(socket_io.emit)
+
+        socket_io.sleep(0.05)
 
 
 @socket_io.on("disconnect")
 def handle_disconnect():
     clients.remove(request.sid)
-    print("Client disconnected:", request.sid)
-
-
-def broadcast():
-    while ksp_conn.connected:
-        socket_io.emit("update", ksp_conn.get_values())
-
-        if cam_conn.connected:
-            img_byte = cam_conn.get_image(0)
-
-            image = Image.open(BytesIO(img_byte))
-            image = image.resize((128, 128), Image.NEAREST)
-            image = image.quantize(16)
-
-            image_bytes = BytesIO()
-            image.save(image_bytes, format="png")
-
-            socket_io.emit("camera", image_bytes.getvalue())
-
-        socket_io.sleep(1)
-
+    
+    debug(f"Client disconnected: {request.sid}")
 
 
 if __name__ == "__main__":
     cam_conn = CameraConn()
 
-    ksp_conn = KSPConnection()
-    
+    ksp_conn = KSPConnection([{"id": cam.id, "get_image": cam.get_image} for cam in cam_conn.cameras])
+
     socket_io.start_background_task(broadcast)
 
-    print("> Running")
+    debug("Running")
 
     socket_io.run(app, host="0.0.0.0", port=8765)
