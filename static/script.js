@@ -1,4 +1,4 @@
-const gridContainer = document.getElementById("container");
+const grid_container = document.getElementById("container");
 
 const blocks = {};
 
@@ -13,7 +13,7 @@ function ShowError(message, timeout=0) {
 }
 
 function DefaultStruct() {
-    gridContainer.innerHTML = `<div class="item" id="header"><h1>Remote Kerbal Commander</h1><p>PING: <span id="ping">--</span></p><div id="errors"></div></div>`;
+    grid_container.innerHTML = `<div class="item" id="header"><h1>Remote Kerbal Commander</h1><p>PING: <span id="ping">--</span></p><div id="errors"></div></div>`;
 }
 
 function CreateStructs(data, socket) {
@@ -52,7 +52,7 @@ function CreateStructs(data, socket) {
             element = div;
         }
     
-        gridContainer.appendChild(element);
+        grid_container.appendChild(element);
     }
 
     // PONG handler
@@ -68,12 +68,9 @@ function CreateStructs(data, socket) {
 }
 
 function UpdateValues(data) {
-    //blocks[data.ke].setValues(data.params)
-
     for (const key in data) {
         for (let i = 0; i < data[key].length; i++) {
-            //console.log(blocks[key][i])
-            blocks[key][i].setValues(data[key][i])
+            blocks[key][i].setValues(data[key][i]);
         }
     }
 }

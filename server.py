@@ -5,6 +5,7 @@ from time import time
 
 from KSPConn import KSPConnection
 from CameraConn import CameraConnection
+from ConnManager import ConnectionManager
 
 def debug(text:str):
     print(f"Server> {text}")
@@ -25,19 +26,21 @@ clients = set()
 def handle_connect():
     clients.add(request.sid)
 
-    ksp_conn.emit_setup(socket_io.emit)
+    conn_manager.emit_setup()
 
     debug(f"Client connected: {request.sid}")
 
 
 def broadcast_values():
-    while ksp_conn.connected:
-        ksp_conn.emit_values(socket_io.emit)
+    debug("Values broadcast started!")
+    while True:
+        conn_manager.emit_values()
 
-        socket_io.sleep(0.05)
+        socket_io.sleep(0.1)
 
 
 def broadcast_ping():
+    debug("Ping broadcast started!")
     while True:
         socket_io.emit("pong", f"{time():.2f}")
 
@@ -56,16 +59,15 @@ def handle_disconnect():
 
 
 if __name__ == "__main__":
+    debug("Starting...")
+    socket_io.start_background_task(broadcast_ping)
+
     cam_conn = CameraConnection()
-    ksp_conn = KSPConnection(cam_conn.cameras)
+    ksp_conn = KSPConnection()
 
-    # create a manager
-
-    ksp_conn.on_error = lambda reason: socket_io.emit("lost-signal", reason)
-    cam_conn.on_error = lambda reason: socket_io.emit("lost-signal", reason)
+    conn_manager = ConnectionManager(socket_io.emit, ksp_conn, cam_conn)
 
     socket_io.start_background_task(broadcast_values)
-    socket_io.start_background_task(broadcast_ping)
 
     debug("Running")
 

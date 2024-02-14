@@ -7,13 +7,12 @@ socket.on("connect", () => {
 });
 
 socket.once("setup", msg => {
-    DefaultStruct(); // Clear errors
+    DefaultStruct();
     CreateStructs(JSON.parse(msg), socket);
 });
 
-socket.once("lost-signal", reason => {
+socket.on("module-error", reason => {
     ShowError(reason, 0);
-    console.log("SIGNAL LOST!");
 });
 
 socket.on("disconnect", reason => {

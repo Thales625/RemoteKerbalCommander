@@ -34,8 +34,6 @@ class Camera:
 
 class CameraConnection:
     def __init__(self) -> None:
-        self.on_error = lambda reason: None
-
         self.cameras = []
 
         self.channel = grpc.insecure_channel(f"{ADDRESS}:{PORT}")
