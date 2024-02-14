@@ -83,3 +83,19 @@ body {
     color: gray;
     content: "......................................";
 }
+
+#errors div h1 {
+    text-decoration: underline;
+    color: #2f0d0d;
+}
+#errors div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 5px solid #b15b5b;
+    border-radius: 20px;
+    padding: 30px;
+    background-color: #522929;
+    color: white;
+}

@@ -7,17 +7,17 @@ socket.on("connect", () => {
 });
 
 socket.once("setup", msg => {
-    DefaultStruct();
+    DefaultStruct(); // Clear errors
     CreateStructs(JSON.parse(msg), socket);
 });
 
-socket.once("lost-signal", msg => {
-    console.log("SIGNAL LOST!!!");
-    console.log(JSON.parse(msg));
+socket.once("lost-signal", reason => {
+    ShowError(reason, 0);
+    console.log("SIGNAL LOST!");
 });
 
 socket.on("disconnect", reason => {
-    console.log("Events:", socket._callbacks);
+    ShowError("WebSocket disconnected", 0);
     console.log("DISCONNECTED");
 });
 

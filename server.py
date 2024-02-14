@@ -4,7 +4,7 @@ from flask_socketio import SocketIO, emit
 from time import time
 
 from KSPConn import KSPConnection
-from CameraConn import CameraConn
+from CameraConn import CameraConnection
 
 def debug(text:str):
     print(f"Server> {text}")
@@ -38,14 +38,15 @@ def broadcast_values():
 
 
 def broadcast_ping():
-    socket_io.emit("pong", time())
+    while True:
+        socket_io.emit("pong", f"{time():.2f}")
 
-    socket_io.sleep(2)
+        socket_io.sleep(2)
 
 
 @socket_io.on("pong")
 def handle_ping(time_0):
-    emit("ping", f"{(time()-time_0)*1000:.2f}")
+    emit("ping", f"{((time()-float(time_0))*1000):.2f}")
 
 @socket_io.on("disconnect")
 def handle_disconnect():
@@ -55,9 +56,13 @@ def handle_disconnect():
 
 
 if __name__ == "__main__":
-    cam_conn = CameraConn()
-
+    cam_conn = CameraConnection()
     ksp_conn = KSPConnection(cam_conn.cameras)
+
+    # create a manager
+
+    ksp_conn.on_error = lambda reason: socket_io.emit("lost-signal", reason)
+    cam_conn.on_error = lambda reason: socket_io.emit("lost-signal", reason)
 
     socket_io.start_background_task(broadcast_values)
     socket_io.start_background_task(broadcast_ping)

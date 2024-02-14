@@ -10,8 +10,10 @@ PORT = 5077
 def debug(text:str):
     print(f"CameraConn > {text}")
 
-class CameraConn:
+class CameraConnection:
     def __init__(self) -> None:
+        self.on_error = lambda reason: None
+        
         self.cameras = []
 
         self.channel = grpc.insecure_channel(f"{ADDRESS}:{PORT}")
@@ -37,9 +39,8 @@ class CameraConn:
 
         if len(cameras_id) <= 0:
             debug("No cameras has found")
-            exit()
 
         self.cameras = [Camera(id, self.stub.GetCameraTexture, cam_pb2.GetCameraTextureRequest) for id in cameras_id]
 
 if __name__ == '__main__':
-    CameraConn()
+    CameraConnection()

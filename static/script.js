@@ -2,11 +2,19 @@ const gridContainer = document.getElementById("container");
 
 const blocks = {};
 
-
-function DefaultStruct() {
-    gridContainer.innerHTML = `<div class="item" id="header"><h1>Remote Kerbal Commander</h1><span>PING: <span id="ping">--</span></span></div>`;
+function ClearError() {
+    document.getElementById("errors").innerHTML = "";
 }
 
+function ShowError(message, timeout=0) {
+    document.getElementById("errors").innerHTML = `<div><h1>ERROR!</h1><span>${message}</span></div>`;
+
+    if (timeout !== 0) setTimeout(ClearError, timeout);
+}
+
+function DefaultStruct() {
+    gridContainer.innerHTML = `<div class="item" id="header"><h1>Remote Kerbal Commander</h1><p>PING: <span id="ping">--</span></p><div id="errors"></div></div>`;
+}
 
 function CreateStructs(data, socket) {
     for (const module in data) {

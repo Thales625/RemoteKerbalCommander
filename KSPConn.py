@@ -10,6 +10,8 @@ def format_value(field):
 
 class KSPConnection:
     def __init__(self, cameras) -> None:
+        self.on_error = lambda reason: None
+
         self.connected = False
 
         try:
@@ -54,8 +56,8 @@ class KSPConnection:
                         "eccentricity": self.conn.add_stream(getattr, self.orbit, "eccentricity")
                     },
                     "resource": {
-                        "battery": lambda: (self.stream_resources().amount("ElectricCharge") / self.stream_resources().max("ElectricCharge")) * 100,
-                        "fuel": lambda: (self.stream_resources().amount("LiquidFuel") / self.stream_resources().max("LiquidFuel")) * 100
+                        "battery": lambda: f"{((self.stream_resources().amount('ElectricCharge') / self.stream_resources().max('ElectricCharge')) * 100):.2f}%",
+                        "fuel": lambda: f"{((self.stream_resources().amount('LiquidFuel') / self.stream_resources().max('LiquidFuel')) * 100):.2f}%"
                     }
                 },
                 "setup": lambda data: {block: [field for field in data[block]] for block in data},
@@ -63,7 +65,7 @@ class KSPConnection:
             },
 
             "camera": {
-                "data": self.cameras,
+                "data": {cam["id"]: cam["get_image"] for cam in self.cameras},
                 "setup": lambda data: {cam: {} for cam in data},
                 "render": lambda data, emit_func: [emit_func(f"update.camera:{cam}", data[cam]()) for cam in data]
             },
@@ -76,8 +78,8 @@ class KSPConnection:
         except ZeroDivisionError:
             self.connected = False
 
-            emit_func("lost-signal", format_value(1000*time()))
-            
+            self.on_error("KSPConnection failed!")
+
             debug("Lost connection!")
 
     def emit_setup(self, emit_func):
