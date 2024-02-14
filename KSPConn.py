@@ -20,7 +20,7 @@ class KSPConnection:
         
         self.connected = True
 
-        self.cameras = cameras
+        self.cameras = [{"id": cam.id, "get_image": cam.get_image} for cam in cameras]
         
         self.space_center = self.conn.space_center
         self.vessel = self.space_center.active_vessel
@@ -51,7 +51,7 @@ class KSPConnection:
                         "apoapsis": self.conn.add_stream(getattr, self.orbit, "apoapsis_altitude"),
                         "periapsis": self.conn.add_stream(getattr, self.orbit, "periapsis_altitude"),
                         "inclination": self.conn.add_stream(getattr, self.orbit, "inclination"),
-                        "eccentricity":self.conn.add_stream(getattr, self.orbit, "eccentricity")
+                        "eccentricity": self.conn.add_stream(getattr, self.orbit, "eccentricity")
                     },
                     "resource": {
                         "battery": lambda: (self.stream_resources().amount("ElectricCharge") / self.stream_resources().max("ElectricCharge")) * 100,
@@ -63,7 +63,7 @@ class KSPConnection:
             },
 
             "camera": {
-                "data": {cam["id"]: cam["get_image"] for cam in self.cameras},
+                "data": self.cameras,
                 "setup": lambda data: {cam: {} for cam in data},
                 "render": lambda data, emit_func: [emit_func(f"update.camera:{cam}", data[cam]()) for cam in data]
             },

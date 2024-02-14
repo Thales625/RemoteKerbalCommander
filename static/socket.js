@@ -18,6 +18,7 @@ socket.once("lost-signal", msg => {
 
 socket.on("disconnect", reason => {
     console.log("Events:", socket._callbacks);
+    console.log("DISCONNECTED");
 });
 
 socket.connect();

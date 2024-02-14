@@ -12,10 +12,12 @@ class BlockParams {
         this.element.className = "item";
 
         this.value_elements = []; // list[<span>]
-
+        
         let div_container = document.createElement("div");
         div_container.innerHTML = `<h2>${this.name}</h2>`;
 
+        div_container.style = "width:80%;max-width:300px;";
+        
         for (let struct_name of struct_list) {
             let p = document.createElement("p");
 
@@ -60,7 +62,7 @@ class BlockCamera {
 
         // Construct
         let div_container = document.createElement("div");
-        div_container.innerHTML = `<h2>Camera</h2>${this.id}`;
+        div_container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;"><h2>Camera</h2> <span style="color:gray;margin-left:5px;margin-top:5px;font-size:smaller;">(${this.id})</span></div>`;
 
         this.image_element = document.createElement("img");
         this.image_element.width = 360;

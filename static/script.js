@@ -4,7 +4,7 @@ const blocks = {};
 
 
 function DefaultStruct() {
-    gridContainer.innerHTML = `<div class="item" id="header"><h1>Remote Kerbal Commander</h1><div id="info"><span>PING: <span id="ping">--</span></span><span>IP: ${document.domain}</span></div></div>`;
+    gridContainer.innerHTML = `<div class="item" id="header"><h1>Remote Kerbal Commander</h1><span>PING: <span id="ping">--</span></span></div>`;
 }
 
 
@@ -46,6 +46,17 @@ function CreateStructs(data, socket) {
     
         gridContainer.appendChild(element);
     }
+
+    // PONG handler
+    socket.on("pong", msg => {
+        socket.emit("pong", msg);
+    });
+    
+    // PING handler
+    let ping_element = document.getElementById("ping");
+    socket.on("ping", ping => {
+        ping_element.innerText = `${ping}ms`;
+    });
 }
 
 function UpdateValues(data) {
