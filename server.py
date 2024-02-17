@@ -51,7 +51,7 @@ def broadcast_ping():
 def handle_ping(time_0):
     emit("ping", f"{((time()-float(time_0))*1000):.2f}")
 
-@socket_io.on("disconnect")
+@socket_io.on("disconnect") 
 def handle_disconnect():
     clients.remove(request.sid)
     
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     cam_conn = CameraConnection()
     ksp_conn = KSPConnection()
 
-    conn_manager = ConnectionManager(socket_io.emit, ksp_conn, cam_conn)
+    conn_manager = ConnectionManager(socket_io.emit, socket_io.on, ksp_conn, cam_conn)
 
     socket_io.start_background_task(broadcast_values)
 
