@@ -67,18 +67,41 @@ class ConnectionManager:
             )
         )
 
+
+
+        def on_recv_controller(data, field, msg):
+            obj = Parse(msg)
+
+            print(data)
+            print(obj)
+            return
+
+            for f in obj:
+                data[field][f][0](obj[f])
+
+            self.emit_func(f"update:controller:{field}") 
+
         self.add_module(
             Module(
                 name="controller",
                 data={
-                    "slider": {
-                        "throttle": lambda value: setattr(ksp_conn.vessel.control, "throttle", value),
+                    "slider": { # field
+                        "throttle": ( # attribute
+                            lambda value: setattr(ksp_conn.vessel.control, "throttle", value * 1e-2),
+                            (0, 100)
+                        )
+                    },
+                    "button": {
+                        "light": (
+                            lambda value: setattr(ksp_conn.vessel.control, "lights", value),
+                            (0, 1)
+                        )
                     }
                 },
-                setup=lambda data: {block: [field for field in data[block]] for block in data},
+                setup=lambda data: {block: {field:{"interval": data[block][field][1]} for field in data[block]} for block in data},
                 send=None,
                 on_error=lambda reason: (self.emit_func("module-error", "KSP Communication failed!"), setattr(ksp_conn, "connected", False)),
-                on_recv=lambda field, msg: (lambda obj: [field[f](obj[f]) for f in obj])(Parse(msg)),
+                on_recv=on_recv_controller,
                 running=lambda: ksp_conn.connected
             )   
         )
@@ -86,9 +109,10 @@ class ConnectionManager:
 
 
     def add_module(self, module):
+        # add recv route
         if module.on_recv:
             for field in module.data:
-                self.add_route_func(f"update:{module.name}:{field}")(lambda msg: module.on_recv(module.data[field], msg))
+                self.add_route_func(f"update:{module.name}:{field}")(lambda msg: module.on_recv(module.data, field, msg))
 
         self.modules.append(module)
 

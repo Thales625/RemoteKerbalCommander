@@ -31,9 +31,9 @@ function CreateStructs(data, socket) {
         blocks.camera.push(new BlockCamera(cam_id, socket));
     }
 
-    for (const field in data.controller) { // TODO
-        
-    }
+    if (data.controller) blocks.controller.push(new BlockController(data.controller, socket));
+
+
 
     all_blocks = [];
     for(const e in blocks) {

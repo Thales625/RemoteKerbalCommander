@@ -47,6 +47,75 @@ class BlockParams {
 }
 
 
+class BlockController {
+    constructor(fields, socket) {
+        this.type = "controller";
+
+        // HTML
+        this.element = document.createElement("div");
+        this.element.className = "item";
+
+        let div_container = document.createElement("div");
+        div_container.innerHTML = `<h2>${this.type}</h2>`;
+
+        div_container.style = "width:80%;max-width:300px;";
+
+        // BUTTON
+        if (fields.button) div_container.innerHTML += "<p style='text-decoration:underline'>Buttons</p>"; // REMOVE
+        // ...
+
+        // SLIDER
+        if (fields.slider) div_container.innerHTML += "<p style='text-decoration:underline'>Sliders</p>"; // REMOVE
+        for (let field in fields.slider) {
+            let p = document.createElement("p");
+
+            let interval = fields.slider[field]["interval"];
+
+            let slider = document.createElement("input");
+            slider.type = "range";
+            slider.min = interval[0];
+            slider.max = interval[1];
+
+            slider.value = slider.min;
+
+            let slider_display = document.createElement("span");
+            slider_display.style.color = "green";
+            slider_display.innerText = slider.value;
+            // o valor do slider_display pode ser o valor retornado pelo servidor :D
+
+            slider.onchange = e => {
+                socket.emit("update:controller:slider", `{"${field}": ${e.target.value}}`);
+                slider_display.innerText = e.target.value;
+                slider_display.style.color = "red";
+            };
+            
+            socket.on("update:controller:slider", msg => {
+                slider_display.innerText = e.target.value;
+                slider_display.style.color = "green";
+            });
+
+            p.innerHTML = `<span class="block-name">${field}</span>`;
+            p.appendChild(slider);
+            p.appendChild(slider_display);
+            
+            div_container.appendChild(p);
+        }
+
+        this.element.appendChild(div_container);
+    }
+
+    setValues(message) {
+        let list_values = JSON.parse(message);
+
+        if (list_values.length != this.value_elements.length) return;
+
+        for (let i = 0; i < list_values.length; i++) {
+            if (i < this.value_elements.length) this.value_elements[i].innerText = list_values[i];
+        }
+    }
+}
+
+
 class BlockCamera {
     constructor(camera_id, socket) {
         this.type = "camera";
