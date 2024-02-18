@@ -8,13 +8,13 @@ def format_value(field):
     return f"{field:.2f}" if isinstance(field, float) else str(field)
 
 class Module:
-    def __init__(self, name, data, setup, send, running, on_recv_setup=None, on_error=None) -> None:
+    def __init__(self, name, data, setup, send, running, recv_setup=None, on_error=None) -> None:
         self.name = name
         self.data = data
         self.setup = setup
         self.send = send
         self.running = running
-        self.on_recv_setup = on_recv_setup
+        self.recv_setup = recv_setup
         self.on_error = on_error
 
 class ConnectionManager:
@@ -23,6 +23,14 @@ class ConnectionManager:
         self.add_route_func = add_route_func
 
         self.modules = []
+
+
+        def send_params(data):
+            #lambda data: [self.emit_func(f"update.params:{block}", Stringify([format_value(data[block][field]()) for field in data[block]]).replace(" ", "")) for block in data],
+
+            for field in data:
+                msg = Stringify([format_value(data[field][attr]()) for attr in data[field]]).replace(" ", "")
+                self.emit_func(f"update.params:{field}", msg)
 
         self.add_module(
             Module(
@@ -49,11 +57,14 @@ class ConnectionManager:
                     },
                 },
                 setup=lambda data: {block: [field for field in data[block]] for block in data},
-                send=lambda data: [self.emit_func(f"update.params:{block}", Stringify([format_value(data[block][field]()) for field in data[block]]).replace(" ", "")) for block in data],
+                send=send_params,
                 on_error=lambda reason: (self.emit_func("module-error", "KSP Communication failed!"), setattr(ksp_conn, "connected", False)),
                 running=lambda: ksp_conn.connected
             )   
         )
+
+
+
 
 
         self.add_module(
@@ -68,7 +79,10 @@ class ConnectionManager:
         )
 
 
-        def on_recv_setup_controller(module):
+
+
+
+        def recv_setup_controller(module):
             for field in module.data:
                 for attr in module.data[field]:
                     on_recv = lambda value, field=field, attr=attr: (module.data[field][attr][0](value), self.emit_func(f"update:controller:{field}:{attr}", value) if module.running() else None)
@@ -107,16 +121,16 @@ class ConnectionManager:
                 setup=lambda data: {field: {attr:{"interval": data[field][attr][1], "value": data[field][attr][2]()} for attr in data[field]} for field in data},
                 send=None,
                 on_error=lambda reason: (self.emit_func("module-error", "KSP Communication failed!"), setattr(ksp_conn, "connected", False)),
-                on_recv_setup=on_recv_setup_controller,
+                recv_setup=recv_setup_controller,
                 running=lambda: ksp_conn.connected
             )   
         )
 
     def add_module(self, module):
         # add recv route
-        if module.on_recv_setup:
+        if module.recv_setup:
             try:
-                module.on_recv_setup(module)
+                module.recv_setup(module)
             except Exception as e:
                 module.on_error(e)
                 debug(f"Moudle: {module.name} error")
