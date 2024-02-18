@@ -60,41 +60,69 @@ class BlockController {
 
         div_container.style = "width:80%;max-width:300px;";
 
-        // BUTTON
-        if (fields.button) div_container.innerHTML += "<p style='text-decoration:underline'>Buttons</p>"; // REMOVE
-        // ...
-
-        // SLIDER
-        if (fields.slider) div_container.innerHTML += "<p style='text-decoration:underline'>Sliders</p>"; // REMOVE
-        for (let field in fields.slider) {
+        // SWITCH
+        for (let attr in fields.switch) {
             let p = document.createElement("p");
 
-            let interval = fields.slider[field]["interval"];
+            let switch_element = document.createElement("input");
+            switch_element.type = "checkbox";
+            switch_element.checked = Boolean(fields.switch[attr]["value"])
+            
 
+            let switch_element_display = document.createElement("span");
+            switch_element_display.style.color = "green";
+            switch_element_display.innerText = switch_element.checked;
+
+            
+            socket.on(`update:controller:switch:${attr}`, msg => {
+                switch_element_display.innerText = msg;
+                switch_element.checked = msg;
+                switch_element_display.style.color = "green";
+            });
+            
+            switch_element.onchange = e => {
+                socket.emit(`update:controller:switch:${attr}`, e.target.checked);
+                switch_element_display.innerText = e.target.checked;
+                switch_element_display.style.color = "red";
+            };
+            
+            
+            p.innerHTML = `<span class="block-name">${attr}</span>`;
+            p.appendChild(switch_element);
+            p.appendChild(switch_element_display);
+            
+            div_container.appendChild(p);
+        }
+
+        // SLIDER
+        for (let attr in fields.slider) {
+            let p = document.createElement("p");
+
+            let interval = fields.slider[attr]["interval"];
             let slider = document.createElement("input");
             slider.type = "range";
             slider.min = interval[0];
             slider.max = interval[1];
 
-            slider.value = slider.min;
+            slider.value = Number(fields.slider[attr]["value"]);
 
             let slider_display = document.createElement("span");
             slider_display.style.color = "green";
             slider_display.innerText = slider.value;
-            // o valor do slider_display pode ser o valor retornado pelo servidor :D
+
+            socket.on(`update:controller:slider:${attr}`, msg => {
+                slider_display.innerText = Number(msg);
+                slider.value = Number(msg);
+                slider_display.style.color = "green";
+            });
 
             slider.onchange = e => {
-                socket.emit("update:controller:slider", `{"${field}": ${e.target.value}}`);
+                socket.emit(`update:controller:slider:${attr}`, e.target.value);
                 slider_display.innerText = e.target.value;
                 slider_display.style.color = "red";
             };
             
-            socket.on("update:controller:slider", msg => {
-                slider_display.innerText = e.target.value;
-                slider_display.style.color = "green";
-            });
-
-            p.innerHTML = `<span class="block-name">${field}</span>`;
+            p.innerHTML = `<span class="block-name">${attr}</span>`;
             p.appendChild(slider);
             p.appendChild(slider_display);
             

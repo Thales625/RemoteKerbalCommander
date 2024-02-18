@@ -4,9 +4,10 @@ const socket = io({autoConnect: false});
 
 socket.on("connect", () => {
     console.log("CONNECTED");
+    ClearError();
 });
 
-socket.once("setup", msg => {
+socket.on("setup", msg => {
     DefaultStruct();
     CreateStructs(JSON.parse(msg), socket);
 });

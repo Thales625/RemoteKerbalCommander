@@ -7,6 +7,11 @@ from KSPConn import KSPConnection
 from CameraConn import CameraConnection
 from ConnManager import ConnectionManager
 
+
+PING_FREQUENCY = 2 # sec
+BROADCAST_FREQUENCY = 0.1 # sec
+
+
 def debug(text:str):
     print(f"Server> {text}")
 
@@ -36,7 +41,7 @@ def broadcast_values():
     while True:
         conn_manager.emit_values()
 
-        socket_io.sleep(0.1)
+        socket_io.sleep(BROADCAST_FREQUENCY)
 
 
 def broadcast_ping():
@@ -44,12 +49,12 @@ def broadcast_ping():
     while True:
         socket_io.emit("pong", f"{time():.2f}")
 
-        socket_io.sleep(2)
-
+        socket_io.sleep(PING_FREQUENCY)
 
 @socket_io.on("pong")
 def handle_ping(time_0):
     emit("ping", f"{((time()-float(time_0))*1000):.2f}")
+
 
 @socket_io.on("disconnect") 
 def handle_disconnect():

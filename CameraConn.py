@@ -48,8 +48,10 @@ class CameraConnection:
             return
 
         self.connected = True
+        debug("Connected")
 
         self.update_cameras()
+
 
     def update_cameras(self):
         active_cams_req = cam_pb2.GetActiveCameraIdsRequest()

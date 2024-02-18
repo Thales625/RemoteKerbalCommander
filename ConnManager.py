@@ -8,13 +8,13 @@ def format_value(field):
     return f"{field:.2f}" if isinstance(field, float) else str(field)
 
 class Module:
-    def __init__(self, name, data, setup, send, running, on_recv=None, on_error=None) -> None:
+    def __init__(self, name, data, setup, send, running, on_recv_setup=None, on_error=None) -> None:
         self.name = name
         self.data = data
         self.setup = setup
         self.send = send
         self.running = running
-        self.on_recv = on_recv
+        self.on_recv_setup = on_recv_setup
         self.on_error = on_error
 
 class ConnectionManager:
@@ -68,52 +68,59 @@ class ConnectionManager:
         )
 
 
+        def on_recv_setup_controller(module):
+            for field in module.data:
+                for attr in module.data[field]:
+                    on_recv = lambda value, field=field, attr=attr: (module.data[field][attr][0](value), self.emit_func(f"update:controller:{field}:{attr}", value) if module.running() else None)
 
-        def on_recv_controller(data, field, msg):
-            obj = Parse(msg)
-
-            print(data)
-            print(obj)
-            return
-
-            for f in obj:
-                data[field][f][0](obj[f])
-
-            self.emit_func(f"update:controller:{field}") 
-
+                    self.add_route_func(f"update:{module.name}:{field}:{attr}")(on_recv)
+                    
         self.add_module(
             Module(
                 name="controller",
                 data={
                     "slider": { # field
                         "throttle": ( # attribute
-                            lambda value: setattr(ksp_conn.vessel.control, "throttle", value * 1e-2),
-                            (0, 100)
+                            lambda value: setattr(ksp_conn.vessel.control, "throttle", float(value) * 1e-2),
+                            (0, 100),
+                            lambda: f"{(getattr(ksp_conn.vessel.control, 'throttle') * 1e2):.2f}"
                         )
                     },
-                    "button": {
-                        "light": (
-                            lambda value: setattr(ksp_conn.vessel.control, "lights", value),
-                            (0, 1)
+                    "switch": {
+                        "lights": (
+                            lambda value: setattr(ksp_conn.vessel.control, "lights", bool(value)),
+                            (0, 1),
+                            lambda: getattr(ksp_conn.vessel.control, "lights")
+                        ),
+                        "gears": (
+                            lambda value: setattr(ksp_conn.vessel.control, "gear", bool(value)),
+                            (0, 1),
+                            lambda: getattr(ksp_conn.vessel.control, "gear")
+                        ),
+                        "brakes": (
+                            lambda value: setattr(ksp_conn.vessel.control, "brakes", bool(value)),
+                            (0, 1),
+                            lambda: getattr(ksp_conn.vessel.control, "brakes")
                         )
                     }
                 },
-                setup=lambda data: {block: {field:{"interval": data[block][field][1]} for field in data[block]} for block in data},
+                setup=lambda data: {field: {attr:{"interval": data[field][attr][1], "value": data[field][attr][2]()} for attr in data[field]} for field in data},
                 send=None,
                 on_error=lambda reason: (self.emit_func("module-error", "KSP Communication failed!"), setattr(ksp_conn, "connected", False)),
-                on_recv=on_recv_controller,
+                on_recv_setup=on_recv_setup_controller,
                 running=lambda: ksp_conn.connected
             )   
         )
 
-
-
     def add_module(self, module):
         # add recv route
-        if module.on_recv:
-            for field in module.data:
-                self.add_route_func(f"update:{module.name}:{field}")(lambda msg: module.on_recv(module.data, field, msg))
-
+        if module.on_recv_setup:
+            try:
+                module.on_recv_setup(module)
+            except Exception as e:
+                module.on_error(e)
+                debug(f"Moudle: {module.name} error")
+            
         self.modules.append(module)
 
     def emit_values(self):
@@ -127,4 +134,4 @@ class ConnectionManager:
                     debug(f"Module {module.name} Error!")
 
     def emit_setup(self):
-        self.emit_func("setup", Stringify({m.name: m.setup(m.data) for m in self.modules}).replace(", ", ",").replace(": ", ":"))
+        self.emit_func("setup", Stringify({m.name: m.setup(m.data) for m in self.modules}))
